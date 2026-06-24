@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout } from "@/components/app-layout";
-import { mockAssessments } from "@/lib/mock-data";
+import { mockAssessments, type Assessment } from "@/lib/mock-data";
 import { ArrowLeft, Pencil, Check, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/feedback/$id")({
