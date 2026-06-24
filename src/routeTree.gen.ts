@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RubricsRouteImport } from './routes/rubrics'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -20,6 +21,11 @@ import { Route as FeedbackIdRouteImport } from './routes/feedback.$id'
 const RubricsRoute = RubricsRouteImport.update({
   id: '/rubrics',
   path: '/rubrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerformanceRoute = PerformanceRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/history': typeof HistoryRoute
   '/performance': typeof PerformanceRoute
+  '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/history': typeof HistoryRoute
   '/performance': typeof PerformanceRoute
+  '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/history': typeof HistoryRoute
   '/performance': typeof PerformanceRoute
+  '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/history'
     | '/performance'
+    | '/profile'
     | '/rubrics'
     | '/feedback/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/history'
     | '/performance'
+    | '/profile'
     | '/rubrics'
     | '/feedback/$id'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/history'
     | '/performance'
+    | '/profile'
     | '/rubrics'
     | '/feedback/$id'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   HistoryRoute: typeof HistoryRoute
   PerformanceRoute: typeof PerformanceRoute
+  ProfileRoute: typeof ProfileRoute
   RubricsRoute: typeof RubricsRoute
   FeedbackIdRoute: typeof FeedbackIdRoute
 }
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/rubrics'
       fullPath: '/rubrics'
       preLoaderRoute: typeof RubricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/performance': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   HistoryRoute: HistoryRoute,
   PerformanceRoute: PerformanceRoute,
+  ProfileRoute: ProfileRoute,
   RubricsRoute: RubricsRoute,
   FeedbackIdRoute: FeedbackIdRoute,
 }
