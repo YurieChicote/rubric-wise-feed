@@ -23,7 +23,7 @@ export const Route = createFileRoute("/feedback/$id")({
 });
 
 function FeedbackPage() {
-  const a = Route.useLoaderData();
+  const a = Route.useLoaderData() as Assessment;
 
   return (
     <AppLayout>
