@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RubricsRouteImport } from './routes/rubrics'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssessRouteImport } from './routes/assess'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,6 +19,11 @@ import { Route as FeedbackIdRouteImport } from './routes/feedback.$id'
 const RubricsRoute = RubricsRouteImport.update({
   id: '/rubrics',
   path: '/rubrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assess': typeof AssessRoute
   '/auth': typeof AuthRoute
+  '/history': typeof HistoryRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assess': typeof AssessRoute
   '/auth': typeof AuthRoute
+  '/history': typeof HistoryRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
@@ -60,21 +68,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/assess': typeof AssessRoute
   '/auth': typeof AuthRoute
+  '/history': typeof HistoryRoute
   '/rubrics': typeof RubricsRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assess' | '/auth' | '/rubrics' | '/feedback/$id'
+  fullPaths:
+    | '/'
+    | '/assess'
+    | '/auth'
+    | '/history'
+    | '/rubrics'
+    | '/feedback/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assess' | '/auth' | '/rubrics' | '/feedback/$id'
-  id: '__root__' | '/' | '/assess' | '/auth' | '/rubrics' | '/feedback/$id'
+  to: '/' | '/assess' | '/auth' | '/history' | '/rubrics' | '/feedback/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/assess'
+    | '/auth'
+    | '/history'
+    | '/rubrics'
+    | '/feedback/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssessRoute: typeof AssessRoute
   AuthRoute: typeof AuthRoute
+  HistoryRoute: typeof HistoryRoute
   RubricsRoute: typeof RubricsRoute
   FeedbackIdRoute: typeof FeedbackIdRoute
 }
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/rubrics'
       fullPath: '/rubrics'
       preLoaderRoute: typeof RubricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -123,6 +153,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssessRoute: AssessRoute,
   AuthRoute: AuthRoute,
+  HistoryRoute: HistoryRoute,
   RubricsRoute: RubricsRoute,
   FeedbackIdRoute: FeedbackIdRoute,
 }
