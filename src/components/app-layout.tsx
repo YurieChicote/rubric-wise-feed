@@ -25,16 +25,17 @@ export function AppLayout({ children }: { children?: ReactNode }) {
     <div className="min-h-screen flex bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-        <div className="px-6 py-6 flex items-center gap-3">
-          <div className="size-10 rounded-xl grid place-items-center" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
+        <div className="px-6 py-7 flex items-center gap-3">
+          <div className="size-10 rounded-lg grid place-items-center" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
             <GraduationCap className="size-5 text-primary-foreground" />
           </div>
           <div>
-            <div className="font-display font-bold text-lg leading-none">SmartCheck</div>
-            <div className="text-[11px] text-muted-foreground mt-1">Assessment Feedback</div>
+            <div className="font-display font-bold text-xl leading-none">SmartCheck</div>
+            <div className="text-[11px] text-sidebar-foreground/60 mt-1">Assessment studio</div>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-2 space-y-1">
+        <div className="px-6 pb-3 text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/40">Workspace</div>
+        <nav className="flex-1 px-3 space-y-1">
           {navItems.map((it) => {
             const active = it.to === "/" ? pathname === "/" : pathname.startsWith(it.to);
             return (
@@ -43,7 +44,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
                 to={it.to}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                     : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                 }`}
               >
@@ -54,8 +55,8 @@ export function AppLayout({ children }: { children?: ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-4 m-3 rounded-xl border border-sidebar-border bg-sidebar-accent/40">
-          <div className="text-xs text-muted-foreground">Signed in as</div>
+        <div className="p-4 m-3 rounded-lg border border-sidebar-border bg-sidebar-accent/40">
+          <div className="text-xs text-sidebar-foreground/55">Signed in as</div>
           <div className="text-sm font-medium mt-0.5">teacher@neu.edu.ph</div>
         </div>
       </aside>

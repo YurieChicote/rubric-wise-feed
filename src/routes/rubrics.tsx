@@ -71,7 +71,7 @@ function RubricsPage() {
               <label className="mt-1.5 flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-border bg-input/40 cursor-pointer hover:border-primary/50 transition-colors">
                 <input type="file" accept=".pdf,.docx" className="hidden" onChange={onFile} />
                 <Upload className="size-6 text-muted-foreground" />
-                <div className="text-sm mt-2">{filename ?? "Tap to browse file"}</div>
+                <div className="text-sm mt-2">{filename ?? "Select a rubric file to upload"}</div>
                 <div className="text-xs text-muted-foreground">PDF or DOCX only</div>
               </label>
             </div>

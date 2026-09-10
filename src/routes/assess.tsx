@@ -16,6 +16,7 @@ function AssessPage() {
   const [rubricId, setRubricId] = useState(mockRubrics[0]?.id ?? "");
   const [filename, setFilename] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -24,6 +25,11 @@ function AssessPage() {
 
   function onGenerate(e: React.FormEvent) {
     e.preventDefault();
+    if (!student.trim() || !title.trim() || !filename) {
+      setError("Please provide the student name, output title, and a PDF or DOCX file.");
+      return;
+    }
+    setError("");
     setLoading(true);
     setTimeout(() => {
       navigate({ to: "/feedback/$id", params: { id: mockAssessments[0].id } });
@@ -67,7 +73,7 @@ function AssessPage() {
             <label className="mt-1.5 flex flex-col items-center justify-center h-40 rounded-xl border-2 border-dashed border-border bg-input/40 cursor-pointer hover:border-primary/50 transition-colors">
               <input type="file" accept=".pdf,.docx" className="hidden" onChange={onFile} />
               <Upload className="size-7 text-muted-foreground" />
-              <div className="text-sm mt-2">{filename ?? "Tap to browse file"}</div>
+              <div className="text-sm mt-2">{filename ?? "Select a file to upload"}</div>
               <div className="text-xs text-muted-foreground">PDF or DOCX</div>
             </label>
           </div>
@@ -78,8 +84,9 @@ function AssessPage() {
             className="w-full h-12 rounded-xl text-primary-foreground font-medium inline-flex items-center justify-center gap-2 disabled:opacity-70"
             style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}
           >
-            {loading ? <><Loader2 className="size-4 animate-spin" /> Generating with RAG...</> : <><Sparkles className="size-4" /> Generate feedback</>}
+            {loading ? <><Loader2 className="size-4 animate-spin" /> Preparing feedback...</> : <><Sparkles className="size-4" /> Generate feedback</>}
           </button>
+          {error && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
         </form>
 
         <p className="text-xs text-muted-foreground mt-4 text-center">

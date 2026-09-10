@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/app-layout";
 import { mockAssessments, mockRubrics } from "@/lib/mock-data";
-import { Plus, TrendingUp, FileText, CheckCircle2, Calendar, ArrowRight } from "lucide-react";
+import { Plus, TrendingUp, FileText, CheckCircle2, Calendar, ArrowRight, Sparkles, Clock3 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard — SmartCheck" }] }),
@@ -9,6 +9,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  if (typeof window !== "undefined" && sessionStorage.getItem("smartcheck-session-active-v2") !== "true") {
+    return <Navigate to="/auth" />;
+  }
+
   const avg = Math.round(mockAssessments.reduce((s, a) => s + a.score, 0) / mockAssessments.length);
   const stats = [
     { label: "Total assessments", value: "12", icon: FileText, tone: "text-primary" },
@@ -28,7 +32,7 @@ function Dashboard() {
       <div className="px-5 md:px-10 py-6 md:py-10 max-w-6xl">
         <PageHeader
           title="Welcome back, Teacher"
-          subtitle="Here's what's happening with your assessments today."
+          subtitle="Review your assessment activity and priorities for today."
           action={
             <Link
               to="/assess"
@@ -40,9 +44,20 @@ function Dashboard() {
           }
         />
 
+        <div className="mb-6 rounded-2xl overflow-hidden text-primary-foreground" style={{ background: "var(--gradient-surface)", boxShadow: "var(--shadow-glow)" }}>
+          <div className="p-5 md:p-7 flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-primary-foreground/65"><Sparkles className="size-3.5" /> Assessment overview</div>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold mt-3">A clear view of every learner.</h2>
+              <p className="text-sm text-primary-foreground/70 mt-2 max-w-md">Five assessments are scheduled for review this week. Maintain timely and meaningful feedback.</p>
+            </div>
+            <Link to="/assess" className="inline-flex items-center justify-center gap-2 rounded-lg bg-white/12 border border-white/20 px-4 h-10 text-sm font-medium hover:bg-white/20 transition-colors"><Plus className="size-4" /> Create assessment</Link>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-card border border-border p-4 md:p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div key={s.label} className="rounded-xl bg-card border border-border p-4 md:p-5" style={{ boxShadow: "var(--shadow-card)" }}>
               <s.icon className={`size-5 ${s.tone}`} />
               <div className="text-2xl md:text-3xl font-bold mt-3">{s.value}</div>
               <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
@@ -51,7 +66,7 @@ function Dashboard() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-4 mt-4">
-          <div className="lg:col-span-2 rounded-2xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="lg:col-span-2 rounded-xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <h3 className="font-display font-semibold text-lg">Common weaknesses</h3>
               <Link to="/performance" className="text-xs text-primary inline-flex items-center gap-1">View insights <ArrowRight className="size-3" /></Link>
@@ -71,8 +86,8 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-            <h3 className="font-display font-semibold text-lg">Recent feedback</h3>
+          <div className="rounded-xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between"><h3 className="font-display font-semibold text-lg">Recent feedback</h3><Clock3 className="size-4 text-muted-foreground" /></div>
             <div className="mt-4 space-y-3">
               {mockAssessments.slice(0, 3).map((a) => (
                 <Link key={a.id} to="/feedback/$id" params={{ id: a.id }} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/60 transition-colors">

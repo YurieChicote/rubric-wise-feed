@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout } from "@/components/app-layout";
 import { mockAssessments, type Assessment } from "@/lib/mock-data";
 import { ArrowLeft, Pencil, Check, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/feedback/$id")({
   head: () => ({ meta: [{ title: "Feedback — SmartCheck" }] }),
@@ -24,6 +25,9 @@ export const Route = createFileRoute("/feedback/$id")({
 
 function FeedbackPage() {
   const a = Route.useLoaderData() as Assessment;
+  const [editing, setEditing] = useState(false);
+  const [approved, setApproved] = useState(a.approved);
+  const [saved, setSaved] = useState(false);
 
   return (
     <AppLayout>
@@ -43,7 +47,7 @@ function FeedbackPage() {
           <div className="flex items-center gap-3">
             <div className="text-xs text-muted-foreground">Suggested score</div>
             <div className="px-3 py-1.5 rounded-lg bg-success/15 text-success font-bold text-lg">{a.score} / 100</div>
-            <button className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></button>
+            <button type="button" onClick={() => setEditing((current) => !current)} aria-label="Edit feedback" className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></button>
           </div>
         </div>
 
@@ -51,7 +55,7 @@ function FeedbackPage() {
           <div className="flex items-center gap-2 text-primary text-sm font-medium">
             <Sparkles className="size-4" /> AI-generated feedback
           </div>
-          <p className="mt-3 text-sm md:text-base leading-relaxed text-foreground/90">{a.feedback}</p>
+          {editing ? <textarea defaultValue={a.feedback} className="mt-3 min-h-32 w-full rounded-lg border border-border bg-input p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-ring" /> : <p className="mt-3 text-sm md:text-base leading-relaxed text-foreground/90">{a.feedback}</p>}
         </div>
 
         <h3 className="font-display font-semibold text-lg mt-8 mb-4">Rubric criteria</h3>
@@ -74,13 +78,14 @@ function FeedbackPage() {
         </div>
 
         <div className="flex gap-3 mt-8 sticky bottom-20 md:static bg-background/80 backdrop-blur md:bg-transparent py-2">
-          <button className="flex-1 h-12 rounded-xl border border-border text-sm font-medium inline-flex items-center justify-center gap-2">
+          <button type="button" onClick={() => setEditing((current) => !current)} className="flex-1 h-12 rounded-xl border border-border text-sm font-medium inline-flex items-center justify-center gap-2">
             <Pencil className="size-4" /> Edit
           </button>
-          <button className="flex-1 h-12 rounded-xl text-primary-foreground font-medium inline-flex items-center justify-center gap-2" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
-            <Check className="size-4" /> Approve & save
+          <button type="button" onClick={() => { setApproved(true); setSaved(true); }} className="flex-1 h-12 rounded-xl text-primary-foreground font-medium inline-flex items-center justify-center gap-2" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
+            <Check className="size-4" /> {approved ? "Approved & saved" : "Approve & save"}
           </button>
         </div>
+        {saved && <p className="mt-3 text-center text-sm text-success">This assessment has been approved for the record.</p>}
       </div>
     </AppLayout>
   );

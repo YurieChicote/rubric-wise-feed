@@ -16,6 +16,7 @@ import { Route as HistoryRouteImport } from './routes/history'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RubricsRouteImport } from './routes/rubrics'
+import { Route as StudentRouteImport } from './routes/student'
 import { Route as FeedbackIdRouteImport } from './routes/feedback.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const RubricsRoute = RubricsRouteImport.update({
   path: '/rubrics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedbackIdRoute = FeedbackIdRouteImport.update({
   id: '/feedback/$id',
   path: '/feedback/$id',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/performance': typeof PerformanceRoute
   '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
+  '/student': typeof StudentRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/performance': typeof PerformanceRoute
   '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
+  '/student': typeof StudentRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/performance': typeof PerformanceRoute
   '/profile': typeof ProfileRoute
   '/rubrics': typeof RubricsRoute
+  '/student': typeof StudentRoute
   '/feedback/$id': typeof FeedbackIdRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/profile'
     | '/rubrics'
+    | '/student'
     | '/feedback/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/profile'
     | '/rubrics'
+    | '/student'
     | '/feedback/$id'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/profile'
     | '/rubrics'
+    | '/student'
     | '/feedback/$id'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   PerformanceRoute: typeof PerformanceRoute
   ProfileRoute: typeof ProfileRoute
   RubricsRoute: typeof RubricsRoute
+  StudentRoute: typeof StudentRoute
   FeedbackIdRoute: typeof FeedbackIdRoute
 }
 
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RubricsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feedback/$id': {
       id: '/feedback/$id'
       path: '/feedback/$id'
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerformanceRoute: PerformanceRoute,
   ProfileRoute: ProfileRoute,
   RubricsRoute: RubricsRoute,
+  StudentRoute: StudentRoute,
   FeedbackIdRoute: FeedbackIdRoute,
 }
 export const routeTree = rootRouteImport

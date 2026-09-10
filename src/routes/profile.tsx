@@ -10,6 +10,11 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const navigate = useNavigate();
+  function logOut() {
+    localStorage.removeItem("smartcheck-user");
+    sessionStorage.removeItem("smartcheck-session-active-v2");
+    navigate({ to: "/auth" });
+  }
   return (
     <AppLayout>
       <div className="px-5 md:px-10 py-6 md:py-10 max-w-2xl">
@@ -32,7 +37,7 @@ function ProfilePage() {
         </div>
 
         <button
-          onClick={() => navigate({ to: "/auth" })}
+          onClick={logOut}
           className="w-full mt-8 h-12 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive font-medium inline-flex items-center justify-center gap-2 hover:bg-destructive/15 transition-colors"
         >
           <LogOut className="size-4" /> Log out
