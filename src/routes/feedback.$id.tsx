@@ -1,15 +1,19 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { AppLayout } from "@/components/app-layout";
-import { mockAssessments, type Assessment } from "@/lib/mock-data";
+import { type Assessment } from "@/lib/mock-data";
+import { apiRequest } from "@/lib/api";
 import { ArrowLeft, Pencil, Check, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/feedback/$id")({
   head: () => ({ meta: [{ title: "Feedback — SmartCheck" }] }),
-  loader: ({ params }) => {
-    const a = mockAssessments.find((x) => x.id === params.id);
-    if (!a) throw notFound();
-    return a;
+  loader: async ({ params }) => {
+    try {
+      const result = await apiRequest<{ assessment: Assessment }>(`/api/assessments/${params.id}`);
+      return result.assessment;
+    } catch {
+      throw notFound();
+    }
   },
   component: FeedbackPage,
   errorComponent: () => <div className="p-8">Could not load feedback.</div>,

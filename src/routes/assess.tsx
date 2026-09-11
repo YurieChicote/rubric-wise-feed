@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/app-layout";
 import { mockRubrics, mockAssessments } from "@/lib/mock-data";
+import { apiRequest } from "@/lib/api";
 import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -23,7 +24,7 @@ function AssessPage() {
     if (f) setFilename(f.name);
   }
 
-  function onGenerate(e: React.FormEvent) {
+  async function onGenerate(e: React.FormEvent) {
     e.preventDefault();
     if (!student.trim() || !title.trim() || !filename) {
       setError("Please provide the student name, output title, and a PDF or DOCX file.");
@@ -31,9 +32,14 @@ function AssessPage() {
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      navigate({ to: "/feedback/$id", params: { id: mockAssessments[0].id } });
-    }, 1200);
+    try {
+      const result = await apiRequest<{ assessment: { id: string } }>("/api/assessments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studentName: student, outputTitle: title, rubricId, rubricName: mockRubrics.find((rubric) => rubric.id === rubricId)?.name, filename }) });
+      navigate({ to: "/feedback/$id", params: { id: result.assessment.id } });
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to create the assessment.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

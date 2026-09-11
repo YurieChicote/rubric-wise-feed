@@ -37,6 +37,18 @@ database.exec(`
     submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(task_id, student_id)
   );
+  CREATE TABLE IF NOT EXISTS assessments (
+    id TEXT PRIMARY KEY,
+    student_name TEXT NOT NULL,
+    output_title TEXT NOT NULL,
+    rubric_id TEXT NOT NULL,
+    rubric_name TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    feedback TEXT NOT NULL,
+    criteria TEXT NOT NULL,
+    approved INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 const taskCount = database.prepare("SELECT COUNT(*) AS count FROM tasks").get().count;
@@ -51,6 +63,13 @@ if (database.prepare("SELECT COUNT(*) AS count FROM users").get().count === 0) {
   const insert = database.prepare("INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
   insert.run("Teacher Name", "teacher@neu.edu.ph", passwordHash("password"), "teacher");
   insert.run("Juan dela Cruz", "student@neu.edu.ph", passwordHash("password"), "student");
+}
+
+if (database.prepare("SELECT COUNT(*) AS count FROM assessments").get().count === 0) {
+  const insert = database.prepare("INSERT INTO assessments (id, student_name, output_title, rubric_id, rubric_name, score, feedback, criteria, approved, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  insert.run("a1", "Juan dela Cruz", "Reflection Paper 1", "r1", "Essay Rubric Q1", 87, "The reflection demonstrates a strong personal voice and clear thesis. Coherence between paragraphs is well-maintained, and the writer integrates relevant examples. Consider deepening the analysis of cited sources and ensuring all citations follow APA formatting consistently.", JSON.stringify([{ name: "Thesis & clarity", score: 18, max: 20, comment: "Strong, focused thesis." }, { name: "Coherence", score: 17, max: 20, comment: "Smooth transitions throughout." }, { name: "Evidence & citations", score: 14, max: 20, comment: "Add APA formatting to two sources." }, { name: "Grammar & mechanics", score: 19, max: 20, comment: "Minimal errors." }, { name: "Reflection depth", score: 19, max: 20, comment: "Insightful self-analysis." }]), 1, "2026-06-11T00:00:00.000Z");
+  insert.run("a2", "Maria Santos", "Essay Q1", "r1", "Essay Rubric Q1", 74, "The essay presents a clear argument but could benefit from stronger supporting evidence. Citations are present but inconsistent. Paragraph structure is solid; consider tightening the conclusion.", JSON.stringify([{ name: "Thesis & clarity", score: 15, max: 20, comment: "Clear but could be sharper." }, { name: "Coherence", score: 15, max: 20, comment: "Mostly cohesive." }, { name: "Evidence & citations", score: 12, max: 20, comment: "Add more primary sources." }, { name: "Grammar & mechanics", score: 16, max: 20, comment: "A few comma splices." }, { name: "Reflection depth", score: 16, max: 20, comment: "Develop the conclusion." }]), 1, "2026-06-10T00:00:00.000Z");
+  insert.run("a3", "Pedro Reyes", "Written Report", "r3", "Written Report", 91, "Excellent technical report with thorough methodology and well-organized data tables. The discussion ties findings back to the hypothesis clearly.", JSON.stringify([{ name: "Methodology", score: 19, max: 20, comment: "Rigorous and clear." }, { name: "Data presentation", score: 18, max: 20, comment: "Well-labeled tables." }, { name: "Discussion", score: 18, max: 20, comment: "Strong analysis." }, { name: "Citations", score: 18, max: 20, comment: "Consistent formatting." }, { name: "Conclusion", score: 18, max: 20, comment: "Concise and supported." }]), 0, "2026-06-09T00:00:00.000Z");
 }
 
 function passwordHash(password) {
@@ -82,6 +101,10 @@ async function body(request) {
 
 function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email, role: user.role };
+}
+
+function publicAssessment(assessment) {
+  return { ...assessment, criteria: JSON.parse(assessment.criteria), approved: Boolean(assessment.approved), date: new Date(assessment.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) };
 }
 
 const server = createServer(async (request, response) => {
@@ -129,6 +152,30 @@ const server = createServer(async (request, response) => {
         ORDER BY tasks.id
       `).all(Number(url.searchParams.get("studentId")) || 0);
       return json(response, 200, { tasks: tasks.map((task) => ({ ...task, status: task.submitted_at ? "Submitted" : task.id === "reflection-1" ? "In progress" : "Not started" })) });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/assessments") {
+      const assessments = database.prepare("SELECT * FROM assessments ORDER BY datetime(created_at) DESC").all();
+      return json(response, 200, { assessments: assessments.map(publicAssessment) });
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/api/assessments/")) {
+      const assessment = database.prepare("SELECT * FROM assessments WHERE id = ?").get(url.pathname.split("/").pop());
+      return assessment ? json(response, 200, { assessment: publicAssessment(assessment) }) : json(response, 404, { error: "Assessment not found." });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/assessments") {
+      const input = await body(request);
+      const studentName = String(input.studentName ?? "").trim();
+      const outputTitle = String(input.outputTitle ?? "").trim();
+      const rubricName = String(input.rubricName ?? "").trim();
+      const filename = String(input.filename ?? "").trim();
+      if (!studentName || !outputTitle || !rubricName || !filename) return json(response, 400, { error: "Student, output title, rubric, and a file are required." });
+      const id = `a-${Date.now()}`;
+      const criteria = [{ name: "Thesis & clarity", score: 17, max: 20, comment: "The central idea is clear and focused." }, { name: "Coherence", score: 16, max: 20, comment: "The response follows a logical structure." }, { name: "Evidence & citations", score: 15, max: 20, comment: "Add more specific evidence and consistent citations." }, { name: "Grammar & mechanics", score: 18, max: 20, comment: "Readable with only minor corrections needed." }, { name: "Reflection depth", score: 16, max: 20, comment: "Develop the implications of the main idea further." }];
+      database.prepare("INSERT INTO assessments (id, student_name, output_title, rubric_id, rubric_name, score, feedback, criteria, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)").run(id, studentName, outputTitle, String(input.rubricId ?? ""), rubricName, 82, `The submitted ${outputTitle} shows a clear direction and thoughtful effort. The strongest next step is to deepen the supporting evidence and refine the connection between each example and the main idea.`, JSON.stringify(criteria));
+      const assessment = database.prepare("SELECT * FROM assessments WHERE id = ?").get(id);
+      return json(response, 201, { assessment: publicAssessment(assessment) });
     }
 
     if (request.method === "POST" && url.pathname === "/api/submissions") {

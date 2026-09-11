@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/app-layout";
-import { mockAssessments } from "@/lib/mock-data";
+import { apiRequest } from "@/lib/api";
+import type { Assessment } from "@/lib/mock-data";
 import { Search } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export const Route = createFileRoute("/history")({
   head: () => ({ meta: [{ title: "Assessment history — SmartCheck" }] }),
@@ -17,9 +18,12 @@ function scoreColor(score: number) {
 
 function HistoryPage() {
   const [q, setQ] = useState("");
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest<{ assessments: Assessment[] }>("/api/assessments").then((result) => setAssessments(result.assessments)).catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Unable to load history.")); }, []);
   const results = useMemo(
-    () => mockAssessments.filter((a) => (a.studentName + a.outputTitle + a.rubricName).toLowerCase().includes(q.toLowerCase())),
-    [q],
+    () => assessments.filter((a) => (a.studentName + a.outputTitle + a.rubricName).toLowerCase().includes(q.toLowerCase())),
+    [q, assessments],
   );
 
   return (
@@ -36,6 +40,7 @@ function HistoryPage() {
             className="w-full h-11 pl-10 pr-3 rounded-lg bg-input border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
           />
         </div>
+        {error && <p role="alert" className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
         <div className="space-y-3">
           {results.map((a) => (

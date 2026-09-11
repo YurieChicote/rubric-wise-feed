@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/app-layout";
-import { mockAssessments, mockRubrics } from "@/lib/mock-data";
-import { Plus, TrendingUp, FileText, CheckCircle2, Calendar, ArrowRight, Sparkles, Clock3 } from "lucide-react";
+import { apiRequest } from "@/lib/api";
+import type { Assessment, Rubric } from "@/lib/mock-data";
+import { Plus, TrendingUp, FileText, CheckCircle2, Calendar, ArrowRight, Sparkles, Clock3, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard — SmartCheck" }] }),
@@ -13,12 +15,17 @@ function Dashboard() {
     return <Navigate to="/auth" />;
   }
 
-  const avg = Math.round(mockAssessments.reduce((s, a) => s + a.score, 0) / mockAssessments.length);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [rubrics] = useState<Rubric[]>([{ id: "r1", name: "Essay Rubric Q1", subject: "English 11", filename: "essay_rubric.pdf", size: "128 KB", uploadedAt: "Jun 8, 2026" }, { id: "r2", name: "Reflection Paper", subject: "Humanities", filename: "reflection.pdf", size: "94 KB", uploadedAt: "Jun 5, 2026" }, { id: "r3", name: "Written Report", subject: "Science 10", filename: "report_rubric.docx", size: "76 KB", uploadedAt: "May 30, 2026" }]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest<{ assessments: Assessment[] }>("/api/assessments").then((result) => setAssessments(result.assessments)).catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Unable to load assessments.")).finally(() => setLoading(false)); }, []);
+  const avg = assessments.length ? Math.round(assessments.reduce((s, a) => s + a.score, 0) / assessments.length) : 0;
   const stats = [
-    { label: "Total assessments", value: "12", icon: FileText, tone: "text-primary" },
+    { label: "Total assessments", value: String(assessments.length), icon: FileText, tone: "text-primary" },
     { label: "Avg. score", value: `${avg}%`, icon: TrendingUp, tone: "text-success" },
-    { label: "Rubrics uploaded", value: String(mockRubrics.length), icon: CheckCircle2, tone: "text-primary" },
-    { label: "This week", value: "5", icon: Calendar, tone: "text-warning" },
+    { label: "Rubrics uploaded", value: String(rubrics.length), icon: CheckCircle2, tone: "text-primary" },
+    { label: "This week", value: String(assessments.length), icon: Calendar, tone: "text-warning" },
   ];
 
   const weaknesses = [
@@ -65,6 +72,8 @@ function Dashboard() {
           ))}
         </div>
 
+        {loading && <div className="flex items-center gap-2 text-sm text-muted-foreground py-8"><Loader2 className="size-4 animate-spin" /> Loading your assessment activity...</div>}
+        {error && <div role="alert" className="rounded-xl bg-destructive/10 text-destructive p-4 text-sm mt-4">{error} Start the API with <strong>npm run server</strong> to load live data.</div>}
         <div className="grid lg:grid-cols-3 gap-4 mt-4">
           <div className="lg:col-span-2 rounded-xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
@@ -89,7 +98,7 @@ function Dashboard() {
           <div className="rounded-xl bg-card border border-border p-5 md:p-6" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between"><h3 className="font-display font-semibold text-lg">Recent feedback</h3><Clock3 className="size-4 text-muted-foreground" /></div>
             <div className="mt-4 space-y-3">
-              {mockAssessments.slice(0, 3).map((a) => (
+              {assessments.slice(0, 3).map((a) => (
                 <Link key={a.id} to="/feedback/$id" params={{ id: a.id }} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/60 transition-colors">
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">{a.studentName}</div>
