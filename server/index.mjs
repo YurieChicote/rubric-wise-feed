@@ -109,16 +109,35 @@ function publicUser(user) {
 }
 
 function publicAssessment(assessment) {
-  return { ...assessment, criteria: JSON.parse(assessment.criteria), approved: Boolean(assessment.approved), date: new Date(assessment.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) };
+  return {
+    id: assessment.id,
+    studentName: assessment.student_name,
+    outputTitle: assessment.output_title,
+    rubricId: assessment.rubric_id,
+    rubricName: assessment.rubric_name,
+    score: assessment.score,
+    feedback: assessment.feedback,
+    criteria: JSON.parse(assessment.criteria),
+    approved: Boolean(assessment.approved),
+    date: new Date(assessment.created_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  };
 }
 
 const server = createServer(async (request, response) => {
   try {
     if (request.method === "OPTIONS") {
-      response.writeHead(204, { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type" });
-      response.end();
-      return;
-    }
+  response.writeHead(204, {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  });
+  response.end();
+  return;
+}
     const url = new URL(request.url ?? "/", "http://localhost");
     if (request.method === "GET" && url.pathname === "/api/health") return json(response, 200, { ok: true });
 
@@ -169,14 +188,105 @@ const server = createServer(async (request, response) => {
       return assessment ? json(response, 200, { assessment: publicAssessment(assessment) }) : json(response, 404, { error: "Assessment not found." });
     }
 
+    if (
+  request.method === "DELETE" &&
+  url.pathname.startsWith("/api/assessments/")
+) {
+  const id = url.pathname.split("/").pop();
+
+  const assessment = database
+    .prepare("SELECT * FROM assessments WHERE id = ?")
+    .get(id);
+
+  if (!assessment) {
+    return json(response, 404, {
+      error: "Assessment not found.",
+    });
+  }
+
+  database
+    .prepare("DELETE FROM assessments WHERE id = ?")
+    .run(id);
+
+  return json(response, 200, {
+    ok: true,
+    message: "Assessment deleted successfully.",
+  });
+}
+
+    if (
+  request.method === "PATCH" &&
+  url.pathname.startsWith("/api/assessments/")
+) {
+  const id = url.pathname.split("/").pop();
+  const input = await body(request);
+
+  const assessment = database
+    .prepare("SELECT * FROM assessments WHERE id = ?")
+    .get(id);
+
+  if (!assessment) {
+    return json(response, 404, {
+      error: "Assessment not found.",
+    });
+  }
+
+  const score = Number(input.score);
+  const feedback = String(input.feedback ?? "").trim();
+  const criteria = Array.isArray(input.criteria)
+    ? input.criteria
+    : JSON.parse(assessment.criteria);
+
+  const approved = input.approved ? 1 : 0;
+
+  if (
+    !Number.isFinite(score) ||
+    score < 0 ||
+    score > 100 ||
+    !feedback
+  ) {
+    return json(response, 400, {
+      error: "Valid score and feedback are required.",
+    });
+  }
+
+  database
+    .prepare(
+      `UPDATE assessments
+       SET score = ?,
+           feedback = ?,
+           criteria = ?,
+           approved = ?
+       WHERE id = ?`
+    )
+    .run(
+      score,
+      feedback,
+      JSON.stringify(criteria),
+      approved,
+      id
+    );
+
+  const updatedAssessment = database
+    .prepare("SELECT * FROM assessments WHERE id = ?")
+    .get(id);
+
+  return json(response, 200, {
+    assessment: publicAssessment(updatedAssessment),
+  });
+}
+
     if (request.method === "POST" && url.pathname === "/api/assessments") {
   const input = await body(request);
 
   const studentName = String(input.studentName ?? "").trim();
   const outputTitle = String(input.outputTitle ?? "").trim();
   const rubricName = String(input.rubricName ?? "").trim();
-  const filename = String(input.filename ?? "").trim();
-  const outputText = String(input.outputText ?? "").trim();
+const rubricCriteria = Array.isArray(input.rubricCriteria)
+  ? input.rubricCriteria
+  : [];
+const filename = String(input.filename ?? "").trim();
+const outputText = String(input.outputText ?? "").trim();
 
   if (
     !studentName ||
@@ -194,10 +304,15 @@ const server = createServer(async (request, response) => {
   const prompt = `
 You are SmartCheck, a rubric-guided student assessment system.
 
-Evaluate the following student output using the selected rubric.
+Evaluate the student's output using the EXACT rubric criteria provided below.
 
 RUBRIC:
 ${rubricName}
+
+RUBRIC CRITERIA:
+${rubricCriteria
+  .map((criterion) => `- ${criterion.name}: ${criterion.max} points`)
+  .join("\n")}
 
 STUDENT:
 ${studentName}
@@ -208,23 +323,19 @@ ${outputTitle}
 STUDENT OUTPUT:
 ${outputText}
 
-Evaluate the actual content of the student's work. Do not give points simply because
-certain keywords appear. Consider the quality, clarity, organization, evidence,
-reasoning, grammar, and depth of the response.
+INSTRUCTIONS:
+1. Evaluate the student's actual work against each rubric criterion.
+2. Use ONLY the criteria provided above.
+3. Do not create, rename, remove, or combine rubric criteria.
+4. Give each criterion a score from 0 up to its specified maximum.
+5. The overall score must be the sum of all criterion scores.
+6. Provide a short, specific explanation for each criterion score.
+7. Provide concise overall feedback.
+8. Provide useful suggestions for improvement.
+9. Do not invent information that is not present in the student's submission.
+10. Be fair and evidence-based.
 
-Return exactly five assessment criteria. Each criterion must have:
-- name
-- score from 0 to 20
-- max of 20
-- a short explanation of why the score was given
-
-Also provide:
-- overall score from 0 to 100
-- concise overall feedback
-- specific suggestions for improvement
-
-Be fair and evidence-based. Do not invent information that is not present in the
-student's submission.
+Return exactly the same number of criteria as provided in the rubric, in the same order.
 `;
 
   try {

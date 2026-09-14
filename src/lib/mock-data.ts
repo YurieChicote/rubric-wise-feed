@@ -1,3 +1,8 @@
+export type RubricCriterion = {
+  name: string;
+  max: number;
+};
+
 export type Rubric = {
   id: string;
   name: string;
@@ -5,6 +10,7 @@ export type Rubric = {
   filename: string;
   size: string;
   uploadedAt: string;
+  criteria: RubricCriterion[];
 };
 
 export type Assessment = {
@@ -16,14 +22,61 @@ export type Assessment = {
   score: number;
   date: string;
   feedback: string;
-  criteria: { name: string; score: number; max: number; comment: string }[];
+  criteria: {
+    name: string;
+    score: number;
+    max: number;
+    comment: string;
+  }[];
   approved: boolean;
 };
 
 export const mockRubrics: Rubric[] = [
-  { id: "r1", name: "Essay Rubric Q1", subject: "English 11", filename: "essay_rubric.pdf", size: "128 KB", uploadedAt: "Jun 8, 2026" },
-  { id: "r2", name: "Reflection Paper", subject: "Humanities", filename: "reflection.pdf", size: "94 KB", uploadedAt: "Jun 5, 2026" },
-  { id: "r3", name: "Written Report", subject: "Science 10", filename: "report_rubric.docx", size: "76 KB", uploadedAt: "May 30, 2026" },
+  {
+    id: "r1",
+    name: "Essay Rubric Q1",
+    subject: "English 11",
+    filename: "essay_rubric.pdf",
+    size: "128 KB",
+    uploadedAt: "Jun 8, 2026",
+    criteria: [
+      { name: "Thesis & Argument", max: 20 },
+      { name: "Organization", max: 20 },
+      { name: "Evidence & Support", max: 20 },
+      { name: "Analysis & Critical Thinking", max: 20 },
+      { name: "Grammar & Mechanics", max: 20 },
+    ],
+  },
+  {
+    id: "r2",
+    name: "Reflection Paper",
+    subject: "Humanities",
+    filename: "reflection.pdf",
+    size: "94 KB",
+    uploadedAt: "Jun 5, 2026",
+    criteria: [
+      { name: "Content & Relevance", max: 20 },
+      { name: "Organization & Structure", max: 20 },
+      { name: "Evidence & Reasoning", max: 20 },
+      { name: "Clarity & Depth", max: 20 },
+      { name: "Grammar & Mechanics", max: 20 },
+    ],
+  },
+  {
+    id: "r3",
+    name: "Written Report",
+    subject: "Science 10",
+    filename: "report_rubric.docx",
+    size: "76 KB",
+    uploadedAt: "May 30, 2026",
+    criteria: [
+      { name: "Methodology", max: 20 },
+      { name: "Data Presentation", max: 20 },
+      { name: "Analysis & Discussion", max: 20 },
+      { name: "Evidence & Accuracy", max: 20 },
+      { name: "Conclusion", max: 20 },
+    ],
+  },
 ];
 
 export const mockAssessments: Assessment[] = [

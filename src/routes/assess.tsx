@@ -66,6 +66,7 @@ function AssessPage() {
             outputTitle: title,
             rubricId,
             rubricName: selectedRubric?.name ?? "Selected Rubric",
+            rubricCriteria: selectedRubric?.criteria ?? [],
             filename,
             outputText,
           }),
