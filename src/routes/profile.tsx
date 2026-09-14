@@ -32,7 +32,10 @@ function ProfilePage() {
         </div>
 
         <button
-          onClick={() => navigate({ to: "/auth" })}
+          onClick={() => {
+            localStorage.removeItem("smartcheck_user");
+             navigate({ to: "/auth" });
+}}
           className="w-full mt-8 h-12 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive font-medium inline-flex items-center justify-center gap-2 hover:bg-destructive/15 transition-colors"
         >
           <LogOut className="size-4" /> Log out
